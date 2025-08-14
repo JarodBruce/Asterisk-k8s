@@ -8,22 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # - asterisk: Asterisk本体
 # - gnupg, curl: Asteriskの公式リポジトリを追加するために必要
 # - procps: psコマンドなど、デバッグに便利なツール
-RUN apt-get update && \
-    apt-get install -y gnupg curl procps && \
-    \
-    # Asteriskの公式リポジトリのキーを追加
-    curl -sL https://packages.asterisk.org/keys/DEB-GPG-KEY-asterisk | apt-key add - && \
-    \
-    # Asteriskの公式リポジトリをaptのソースリストに追加
-    echo "deb http://packages.asterisk.org/deb bullseye main" > /etc/apt/sources.list.d/asterisk.list && \
-    \
-    # パッケージリストを再度更新し、Asteriskをインストール
-    apt-get update && \
-    apt-get install -y asterisk && \
-    \
-    # 不要になったパッケージキャッシュを削除してイメージサイズを削減
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update &&     apt-get install -y asterisk procps &&     apt-get clean &&     rm -rf /var/lib/apt/lists/*
 
 # Asteriskの実行に必要なディレクトリを作成
 RUN mkdir -p /var/run/asterisk /var/log/asterisk /var/lib/asterisk /var/spool/asterisk && \
@@ -38,4 +23,8 @@ EXPOSE 10000-20000/udp
 # -f: フォアグラウンドで実行
 # -U: 実行ユーザーを指定
 # -G: 実行グループを指定
-CMD ["asterisk", "-f", "-U", "asterisk", "-G", "asterisk"]
+COPY ./entrypoint.sh /
+COPY ./ntfy_status.sh /usr/local/bin/ntfy_status.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+RUN asterisk -vx "pjsip list endpoints"
