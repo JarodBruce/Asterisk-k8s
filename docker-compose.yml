@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  asterisk:
+    # 同じディレクトリにあるDockerfileを使用してイメージをビルド
+    build: .
+    # コンテナに分かりやすい名前を付ける
+    container_name: asterisk-server
+    # コンテナを常に再起動するポリシー
+    restart: always
+    # ネットワークモードを "host" に設定
+    # これにより、コンテナはホスト(ラズパイ)のネットワークを直接使用します。
+    # DockerのNATを介さず、IPアドレスも共有するため、ネットワーク設定がシンプルになります。
+    network_mode: "host"
+    # ボリュームのマウント設定
+    # 左側(ホスト)の ./conf ディレクトリを、右側(コンテナ)の /etc/asterisk にマウント
+    volumes:
+      - ./conf:/etc/asterisk
+      - ./moh:/var/lib/asterisk/moh
+      - ./sounds:/var/lib/asterisk/sounds
